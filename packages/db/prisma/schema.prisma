@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(uuid())
+  name        String
+  email       String       @unique
+  password    String
+  workflows   Workflow[]
+  credentials Credential[]
+  createdAt   DateTime     @default(now())
+}
+
+model Workflow {
+  id          String      @id @default(uuid())
+  userId      String
+  title       String
+  isEnabled   Boolean     @default(true)
+  user        User        @relation(fields: [userId], references: [id])
+  nodes       Json
+  connections Json
+  executions  Execution[]
+  webhookId   String?     @unique
+  webhook     Webhook?    @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+}
+
+model Webhook {
+  id     String  @id @default(uuid())
+  title  String
+  method Methods @default(GET)
+
+  workflowId String
+  workflow Workflow?
+}
+
+enum Methods {
+  GET
+  POST
+  PUT
+  DELETE
+}
+
+model Execution {
+  id         String          @id @default(uuid())
+  workflow   Workflow        @relation(fields: [workflowId], references: [id])
+  workflowId String
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  status     ExecutionStatus @default(PENDING)
+  payload    Json?
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  PARTIAL
+  FAILED
+}
+
+enum ActionType {
+  AGENT
+  TELEGRAM
+  GMAIL
+}
+
+enum Platform {
+  TELEGRAM
+  GMAIL
+}
+
+
+model Credential {
+  id       String   @id @default(uuid())
+  userId   String
+  platform Platform
+  data     Json
+  user     User     @relation(fields: [userId], references: [id])
+}
