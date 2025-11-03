@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
+import { RESEND_KEY } from '../config';
 
-const resend = new Resend('re_d2XEfGLa_6tv3uNwXsWocXkTAT8YuZF3q');
+const resend = new Resend(RESEND_KEY);
 
 resend.emails.send({
   from: 'onboarding@resend.dev',
