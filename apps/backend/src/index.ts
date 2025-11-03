@@ -1,12 +1,14 @@
 import express from "express";
 import cookieParser from 'cookie-parser';
 import authRouter from "./routes/auth.routes";
+import workflowRouter from "./routes/workflow.routes";
 
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
 
 app.use("/auth", authRouter);
+app.use("/dashboard", workflowRouter);
 
 
 app.get("/", (req , res) => {

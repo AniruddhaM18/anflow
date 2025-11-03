@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
-import { email } from "zod";
 
 declare global {
     namespace Express{
@@ -10,7 +9,6 @@ declare global {
         }
     }
 }
-
 
 export interface AuthRequest extends Request {
     user? : {
@@ -29,7 +27,6 @@ export const authMiddleware = async(req : Request, res: Response, next: NextFunc
             });
             return;
         }
-
         //verify token
         const payload = jwt.verify(token, JWT_SECRET!) as any;
 
