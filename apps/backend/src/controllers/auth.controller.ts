@@ -1,4 +1,4 @@
-import {Request, Response} from "express";
+import e, {Request, Response} from "express";
 import jwt from "jsonwebtoken";
 import { Resend } from "resend";
 import { SigninSchema, SignupSchema } from "../types";
@@ -126,46 +126,69 @@ export const callback = async(req:Request, res:Response) => {
     try{
         const payload = jwt.verify(token as string, JWT_SECRET!);
         const { type, email, username } = payload as any;
+        
+        let userId: string;  
 
         if(type === "signup"){
-            //db call
             const existingUser = await prismaClient.user.findUnique({
-                where: {
-                    email
-                }
+                where: { email }
             });
-            if(!existingUser){
-                await prismaClient.user.create({
+            if(!existingUser) {
+                const newUser = await prismaClient.user.create({
                     data: {
                         username,
                         email
                     }
                 });
-                console.log("New Signup", {email,username});
-            }
-            res.json({
-                message: `Signed up successfully ${email}`
-            });
-            return;
-        }
-        if(type === "signin"){
+                userId = newUser.id;
+                console.log("New Signup", { email, username});
+            } else {
+                userId = existingUser.id
+            } 
+        } else if(type === "signin"){
             const existingUser = await prismaClient.user.findUnique({
-                where: {
-                    email
-                }
+                where: { email }
             });
             if(!existingUser){
                 res.status(404).json({
-                    message: "User not found, Please signup first"
+                    message: "User not found, Kindly signup first"
                 });
                 return;
             }
+            userId = existingUser.id;
             console.log("Signed in", email);
-            res.json({
-                message: `Signed in as ${email}`
+        } else {
+            res.status(404).json({
+                message: "Invalid token type"
             });
             return;
         }
+
+        // creating a session token
+
+        const sessionToken = jwt.sign({
+            userId, 
+            email, 
+            type: "session"
+        }, JWT_SECRET!, {
+            expiresIn: "7d"
+        });
+        
+        //setting http only cookie
+        res.cookie('sessionToken', sessionToken, {
+            httpOnly: true,
+            secure: true,
+            maxAge:  7 * 24 * 60 * 60 * 1000 //7days
+        });
+
+        // Redirect to dashboard or send token
+        res.json({
+         message: type === "signup" ? "Signed up successfully" : "Signed in successfully",
+         token: sessionToken,
+         userId: userId
+        });
+
+
     }catch(err){
         console.log(err);
         res.status(400).json({
