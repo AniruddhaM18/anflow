@@ -1,9 +1,10 @@
-import e, {Request, Response} from "express";
+import {Request, Response} from "express";
 import jwt from "jsonwebtoken";
 import { Resend } from "resend";
 import { SigninSchema, SignupSchema } from "../types";
 import { prismaClient } from "@repo/db"
 import { APP_URL, JWT_SECRET, RESEND_KEY } from "../config";
+
 
 const resend = new Resend(RESEND_KEY!);
 
@@ -35,7 +36,7 @@ async function sendMagicLink({
 }
 
 export const signupController = async(req: Request, res: Response)=> {
-     const userCreated = SignupSchema.safeParse(req.body);
+    const userCreated = SignupSchema.safeParse(req.body);
     if(userCreated.error){
         res.status(404).json({
             message: "Invalid inputs"
@@ -187,7 +188,6 @@ export const callback = async(req:Request, res:Response) => {
          token: sessionToken,
          userId: userId
         });
-
 
     }catch(err){
         console.log(err);
