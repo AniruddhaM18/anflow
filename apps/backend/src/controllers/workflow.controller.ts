@@ -5,14 +5,14 @@ import { any } from "zod";
 
 export const createWorkflow = async (req : Request, res: Response) => {
     try {
-    const workflowCreated =  createWorkflowSchema.safeParse(req.body);
+    const workflow =  createWorkflowSchema.safeParse(req.body);
     
-    if(!workflowCreated.success) {
+    if(!workflow.success) {
         return res.status(400).json({
             message:"Error creating workflow"
         })
     }
-    const { title, nodes, connections } = workflowCreated.data;
+    const { title, nodes, connections } = workflow.data;
     const newWorkflow = await prismaClient.workflow.create({
         data: {
             title,
