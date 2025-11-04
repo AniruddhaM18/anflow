@@ -44,3 +44,13 @@ export const createWorkflowSchema = z.object({
 })
 
 export const updateWorkflowSchema = createWorkflowSchema.partial();
+
+
+export const credentialSchema = z.object({
+    platform: z.string(),
+    data: z.record(z.string(), z.any()),
+});
+
+export const webhookSchema = z.object({
+    title: z.string().min(1),
+})

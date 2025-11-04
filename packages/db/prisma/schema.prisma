@@ -80,7 +80,6 @@ enum Platform {
   GMAIL
 }
 
-
 model Credential {
   id       String   @id @default(uuid())
   userId   String
