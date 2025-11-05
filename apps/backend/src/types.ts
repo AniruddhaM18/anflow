@@ -52,5 +52,5 @@ export const credentialSchema = z.object({
 });
 
 export const webhookSchema = z.object({
-    title: z.string().min(1),
+    method: z.enum(["GET", "POST"]).optional().default("GET")
 })

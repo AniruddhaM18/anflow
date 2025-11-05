@@ -42,12 +42,14 @@ model Webhook {
   method Methods @default(GET)
   workflowId String
   workflow Workflow?
+  url String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Methods {
   GET
   POST
-  PUT
   DELETE
 }
 
