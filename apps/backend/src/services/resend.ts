@@ -1,65 +1,37 @@
 import { prismaClient } from "@repo/db";
-import { Request, Response } from "express";
 import { Resend } from "resend";
 
-export const resendService = async(req:Request, res:Response) => {
-  try{
-    const userId = req.user?.id;
-    if(!userId){
-      res.status(401).json({
-        message: "Unauthorized"
-      });
-      return;
-    }
-    const { to, html, subject } = req.body;
-    if(!to || !html || !subject){
-      res.json(400).json({
-        message: "All fields required"
-      });
-      return
-    }
-    const getCredential = await prismaClient.credential.findFirst({
-      where:{
-        userId,
-        platform: "GMAIL"
-      }
-    });
-    if(!getCredential){
-      res.status(401).json({
-        message: "Credential not found"
-      });
-      return;
-    }
+export async function sendResendMail({
+  userId,
+  to,
+  subject,
+  html
+}: {
+  userId: string,
+  to: string | string[],
+  subject: string,
+  html: string
+}) {
+  if(!userId) throw new Error("Unauthorized");
+  if(!to || !subject || !html) throw new Error("All fields required");
 
-    const { apiKey, fromEmail } = getCredential.data as any;
-    if(!apiKey || !fromEmail){
-      res.status(401).json({
-        message: "Missing credentials"
-      });
-      return;
+  const getCredential = await prismaClient.credential.findFirst({
+    where:{
+      userId,
+      platform: "GMAIL"
     }
+  });
+  if(!getCredential) throw new Error("Credential not found");
+  const { apiKey, fromEmail } = getCredential.data as any;
+  if(!apiKey || !fromEmail) throw new Error("Missing credential");
 
-    const resend = new Resend(apiKey);
-    const { data, error } = await resend.emails.send({
+  const resend = new Resend(apiKey);
+  const { data, error } = await resend.emails.send({
     from: fromEmail,
-    to: Array.isArray(to) ? to : [to],//resend requires array
-    subject: subject,
-    html:html,
-    });
-    
-    if(error){
-      res.status(500).json({
-        message: "Error", error
-      });
-      return;
-    }
-    res.json({
-      message:"Email sent successfully ", data
-    });
-    }catch(err){
-    console.log(err);
-    res.status(500).json({
-      message: "Server error"
-    });
-  }
+    to: Array.isArray(to) ? to: [to],
+    subject,
+    html
+  });
+  if(error) throw new Error(error.message || "Failed to send email");
+  return data;
 }
