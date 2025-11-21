@@ -52,7 +52,7 @@ export async function signupController(req: Request, res: Response) {
                 message: "User already exists, kindly signin"
             })
         }
-        const token = jwt.sign({ type: "signup", email, username }, JWT_SECRET, {
+        const token = jwt.sign({ type: "signup", email, username }, JWT_SECRET!, {
             expiresIn: "15m"
         });
         const link = `${APP_URL}/auth/callback?token=${token}`;
@@ -87,7 +87,7 @@ export async function signinController(req: Request, res: Response) {
                 message: "User not found please signup"
             })
         }
-        const token = jwt.sign({ type: "signin", email }, JWT_SECRET, {
+        const token = jwt.sign({ type: "signin", email }, JWT_SECRET!, {
             expiresIn: "15m"
         });
 
@@ -113,7 +113,7 @@ export async function callback(req: Request, res: Response) {
         })
     }
     try {
-        const payload = jwt.verify(token as any, JWT_SECRET);
+        const payload = jwt.verify(token as any, JWT_SECRET!);
         const { type, email, username } = payload as any;
         let userId: string;
 
@@ -155,7 +155,7 @@ export async function callback(req: Request, res: Response) {
         }
 
         //creating a session token
-        const sessionToken = jwt.sign({ email, userId, type: "session" }, JWT_SECRET, {
+        const sessionToken = jwt.sign({ email, userId, type: "session" }, JWT_SECRET!, {
             expiresIn: "7d"
         });
 
