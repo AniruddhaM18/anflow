@@ -13,8 +13,6 @@ declare global{
     }
 }
 
-
-
 export function authMiddleware(req: Request, res: Response, next: NextFunction){
     try{
         //get token from headers
@@ -26,7 +24,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction){
         }
         // verify payload
 
-        const payload = jwt.verify(token, JWT_SECRET) as any;
+        const payload = jwt.verify(token, JWT_SECRET!) as any;
 
         if(payload.type !== 'session'){
             return res.status(401).json({
